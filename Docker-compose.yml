@@ -1,0 +1,60 @@
+version: '3'
+services:
+  vue:
+    # попытка билда vue по докер файлу
+    # build: 
+    #   context: images/vue
+    #   dockerfile: Dockerfile
+    image: vue
+    volumes:
+      - ./www/vue:/app
+    ports:
+      - 3001-3003:8080
+    #создание 3хреплик контайнера  
+    deploy:
+      mode: replicated
+      replicas: 3
+    links:
+      - postgres
+    networks:
+      - net01   
+  
+  nginx:
+    image: nginx 
+    volumes:
+      - ./hosts/:/etc/nginx/conf.d
+      - ./www:/var/www
+      - ./logs/nginx:/var/log/nginx
+    ports:
+      - 80:80
+    networks:
+      - net01   
+    links:
+      - vue  
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "user"
+    volumes:
+      - .:/docker-entrypoint-initdb.d
+      - ./etc/postgresql:/etc/postgresql
+      - ./logs/postgresql:/var/log/postgresql
+      - ./postgresql:/var/lib/postrgesql
+      - ./postgresql-files:/var/lib/postgres-files
+    ports:
+      - 5432:5432
+    networks:
+      - net01 
+networks:
+  net01:
+    driver: bridge
+    ipam: 
+      config:
+        - subnet: 192.168.220.0/24
+               
+
+
+
+
+ 
